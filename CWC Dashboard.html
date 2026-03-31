@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CWC — Cause We Care Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --card-hover: #222632;
+    --border: #2a2e3a;
+    --accent: #6c5ce7;
+    --accent-light: #a29bfe;
+    --green: #00b894;
+    --green-bg: rgba(0,184,148,.12);
+    --amber: #fdcb6e;
+    --amber-bg: rgba(253,203,110,.12);
+    --red: #e17055;
+    --red-bg: rgba(225,112,85,.12);
+    --blue: #74b9ff;
+    --blue-bg: rgba(116,185,255,.12);
+    --text: #e8e8ee;
+    --text-muted: #8b8fa3;
+    --text-dim: #5a5e72;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ─── Header ─── */
+  .header {
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header-left h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -.5px;
+  }
+  .header-left h1 span { color: var(--accent-light); }
+  .header-left p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+  .header-right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .pill-green { background: var(--green-bg); color: var(--green); }
+  .pill-amber { background: var(--amber-bg); color: var(--amber); }
+  .pill-blue  { background: var(--blue-bg);  color: var(--blue);  }
+  .pill-red   { background: var(--red-bg);   color: var(--red);   }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .dot-green { background: var(--green); }
+  .dot-amber { background: var(--amber); }
+
+  /* ─── Tabs ─── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 16px 40px 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+    white-space: nowrap;
+    background: none;
+    border-top: none; border-left: none; border-right: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent-light); border-bottom-color: var(--accent-light); }
+
+  /* ─── Content ─── */
+  .content { padding: 28px 40px 60px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ─── KPI row ─── */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: background .2s;
+  }
+  .kpi:hover { background: var(--card-hover); }
+  .kpi-label { font-size: 12px; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); margin-bottom: 8px; }
+  .kpi-value { font-size: 28px; font-weight: 700; letter-spacing: -.5px; }
+  .kpi-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+
+  /* ─── Cards ─── */
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .icon { font-size: 18px; }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    transition: background .2s;
+  }
+  .card:hover { background: var(--card-hover); }
+  .card h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+  .card p, .card li { font-size: 13.5px; color: var(--text-muted); line-height: 1.65; }
+  .card ul { padding-left: 18px; }
+  .card ul li { margin-bottom: 4px; }
+  .card a { color: var(--accent-light); text-decoration: none; font-size: 12px; }
+  .card a:hover { text-decoration: underline; }
+
+  /* ─── Progress bar ─── */
+  .progress-wrap { margin-top: 12px; }
+  .progress-bar {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width .6s ease;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* ─── Timeline ─── */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: var(--border);
+  }
+  .tl-item { position: relative; margin-bottom: 20px; }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -22px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: var(--bg);
+  }
+  .tl-item.done::before { background: var(--green); border-color: var(--green); }
+  .tl-item.current::before { background: var(--accent); border-color: var(--accent); }
+  .tl-date { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; }
+  .tl-text { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ─── Revenue chart ─── */
+  .chart-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .chart-header h3 { font-size: 15px; font-weight: 600; }
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  canvas { width: 100% !important; height: 220px !important; }
+
+  /* ─── Table ─── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  .data-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .data-table tr:hover td { background: var(--card-hover); }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 720px) {
+    .header, .tabs, .content { padding-left: 20px; padding-right: 20px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<div class="header">
+  <div class="header-left">
+    <h1>Cause We <span>Care</span></h1>
+    <p>Live dashboard — updated from Granola transcripts &middot; 31 Mar 2026</p>
+  </div>
+  <div class="header-right">
+    <span class="pill pill-green"><span class="dot dot-green"></span> Product Live</span>
+    <span class="pill pill-amber"><span class="dot dot-amber"></span> Pre-Revenue</span>
+  </div>
+</div>
+
+<!-- ═══════════ TABS ═══════════ -->
+<div class="tabs" id="tabs">
+  <button class="tab active" data-tab="overview">Overview</button>
+  <button class="tab" data-tab="product">Product</button>
+  <button class="tab" data-tab="program">Program</button>
+  <button class="tab" data-tab="marketing">Marketing</button>
+  <button class="tab" data-tab="sales">Sales</button>
+  <button class="tab" data-tab="community">Community</button>
+</div>
+
+<!-- ═══════════ PANELS ═══════════ -->
+<div class="content">
+
+<!-- ── OVERVIEW ── -->
+<div class="panel active" id="panel-overview">
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">MVP Users (Full Loop)</div>
+      <div class="kpi-value">30–40</div>
+      <div class="kpi-sub">Community organizers tested</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Revenue Target</div>
+      <div class="kpi-value" style="color:var(--green)">₹30L/mo</div>
+      <div class="kpi-sub">By November 2026</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Pricing</div>
+      <div class="kpi-value">$4<span style="font-size:16px;color:var(--text-muted)">/mo</span></div>
+      <div class="kpi-sub">Freemium → Premium subscription</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Users Needed for Target</div>
+      <div class="kpi-value">12,000</div>
+      <div class="kpi-sub">For ₹30L monthly profit</div>
+    </div>
+  </div>
+
+  <!-- Revenue Trajectory Chart -->
+  <div class="chart-container">
+    <div class="chart-header">
+      <h3>Revenue Trajectory → ₹30L/mo</h3>
+      <div class="chart-legend">
+        <span><span class="legend-dot" style="background:var(--accent)"></span> Target path</span>
+        <span><span class="legend-dot" style="background:var(--green)"></span> Actual</span>
+      </div>
+    </div>
+    <canvas id="revenueChart"></canvas>
+  </div>
+
+  <!-- Milestone Timeline -->
+  <div class="section-title"><span class="icon">◈</span> Key Milestones</div>
+  <div class="card" style="margin-bottom:28px">
+    <div class="timeline">
+      <div class="tl-item done">
+        <div class="tl-date">Completed</div>
+        <div class="tl-text">MVP built — AI chatbot with community weaving framework</div>
+      </div>
+      <div class="tl-item done">
+        <div class="tl-date">Completed</div>
+        <div class="tl-text">30–40 users completed full inquiry loop</div>
+      </div>
+      <div class="tl-item done">
+        <div class="tl-date">Completed</div>
+        <div class="tl-text">CEO cohort tested — "fundamentally shifted" conversations</div>
+      </div>
+      <div class="tl-item current">
+        <div class="tl-date">Now → Q2 2026</div>
+        <div class="tl-text">Expand from 100 organizers to 20,000 MAD alumni</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">Jul–Aug 2026</div>
+        <div class="tl-text">Volunteer rollout — consumer-first adoption</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">Nov 2026</div>
+        <div class="tl-text">₹30L monthly profit — 12,000 paying users</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">2027–28</div>
+        <div class="tl-text">$1M ARR (30K users) → $3M ARR (100K users)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team -->
+  <div class="section-title"><span class="icon">◈</span> Core Team</div>
+  <div class="kpi-row" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
+    <div class="kpi" style="text-align:center">
+      <div class="kpi-value" style="font-size:20px">Jithin</div>
+      <div class="kpi-sub">Vision & Strategy</div>
+    </div>
+    <div class="kpi" style="text-align:center">
+      <div class="kpi-value" style="font-size:20px">Sanjay</div>
+      <div class="kpi-sub">Technical Lead</div>
+    </div>
+    <div class="kpi" style="text-align:center">
+      <div class="kpi-value" style="font-size:20px">Manny</div>
+      <div class="kpi-sub">Co-founder</div>
+    </div>
+    <div class="kpi" style="text-align:center">
+      <div class="kpi-value" style="font-size:20px">Shruti</div>
+      <div class="kpi-sub">Design Insights</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PRODUCT ── -->
+<div class="panel" id="panel-product">
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Stage</div>
+      <div class="kpi-value" style="font-size:22px;color:var(--green)">MVP Live</div>
+      <div class="kpi-sub">Functional product launched</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Tech Stack</div>
+      <div class="kpi-value" style="font-size:22px">Claude API</div>
+      <div class="kpi-sub">AI-powered chat interface</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Interface</div>
+      <div class="kpi-value" style="font-size:22px">Chat-based</div>
+      <div class="kpi-sub">Streaming conversation (not survey)</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Users Tested</div>
+      <div class="kpi-value">30–40</div>
+      <div class="kpi-sub">Full loop completed</div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="icon">◈</span> Core Feature Set</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Growth Card System</h3>
+      <ul>
+        <li>Personal inquiry across 5 life areas: <strong style="color:var(--text)">Fire, Web, Rhythm, Circle, Spiral</strong></li>
+        <li>AI-generated insights on purpose, growth edges, blind spots</li>
+        <li>30-day experiments with concrete steps</li>
+      </ul>
+      <a href="https://notes.granola.ai/d/1a14fd70-4d3b-40a7-bdf4-cff836b22eb8" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>Care Angels</h3>
+      <ul>
+        <li>Invite 5 trusted peers for anonymized feedback</li>
+        <li>Feedback woven into growth card</li>
+        <li>"Sycophantic analysis" — sees users at highest possibility</li>
+      </ul>
+      <a href="https://notes.granola.ai/d/98ed1a00-96f9-45c6-83cd-024e2291280a" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>AI Chatbot</h3>
+      <ul>
+        <li>Streaming conversation interface (not survey-like)</li>
+        <li>Users feel like "talking to an actual MAD person"</li>
+        <li>Daily journaling for progress tracking</li>
+      </ul>
+      <a href="https://notes.granola.ai/d/60a9d323-975b-4da6-bb5c-75f1c9001f71" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>Community Layer</h3>
+      <ul>
+        <li>Circle formation facilitation</li>
+        <li>Social media layer for Dunbar 5/15 relationships</li>
+        <li>Second brain functionality as competitive moat</li>
+      </ul>
+      <a href="https://notes.granola.ai/d/78a4963e-f42e-4560-ae07-23bfacac318e" target="_blank">Source: Granola →</a>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="icon">◈</span> Product Roadmap</div>
+  <div class="card" style="margin-bottom:28px">
+    <div class="timeline">
+      <div class="tl-item done">
+        <div class="tl-date">Done</div>
+        <div class="tl-text">Personal inquiry chatbot — 5 life areas</div>
+      </div>
+      <div class="tl-item done">
+        <div class="tl-date">Done</div>
+        <div class="tl-text">Growth cards with AI-generated insights</div>
+      </div>
+      <div class="tl-item done">
+        <div class="tl-date">Done</div>
+        <div class="tl-text">Care Angels — anonymized peer feedback</div>
+      </div>
+      <div class="tl-item current">
+        <div class="tl-date">In Progress</div>
+        <div class="tl-text">Team applications for small groups</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">Planned</div>
+        <div class="tl-text">Enterprise edition for multi-team orgs</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">Planned</div>
+        <div class="tl-text">Collective action tools (fundraising, organizing)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROGRAM ── -->
+<div class="panel" id="panel-program">
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Phase</div>
+      <div class="kpi-value" style="font-size:20px;color:var(--amber)">Scaling</div>
+      <div class="kpi-sub">100 organizers → 20K alumni</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Organizers Testing</div>
+      <div class="kpi-value">100</div>
+      <div class="kpi-sub">Community organizers active</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Next Cohort</div>
+      <div class="kpi-value" style="font-size:22px">20,000</div>
+      <div class="kpi-sub">MAD alumni rollout planned</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Volunteer Launch</div>
+      <div class="kpi-value" style="font-size:22px">Jul–Aug</div>
+      <div class="kpi-sub">Consumer-first adoption</div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="icon">◈</span> Rollout Progress</div>
+  <div class="card" style="margin-bottom:28px">
+    <h3>Community Organizers → MAD Alumni → Volunteers</h3>
+    <div class="progress-wrap">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">Phase 1: Community Organizers</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div>
+      <div class="progress-label"><span>100 organizers</span><span style="color:var(--green)">Complete</span></div>
+    </div>
+    <div class="progress-wrap">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">Phase 2: MAD Alumni Expansion</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:12%;background:var(--accent)"></div></div>
+      <div class="progress-label"><span>~100 / 20,000 alumni</span><span>In progress</span></div>
+    </div>
+    <div class="progress-wrap">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">Phase 3: Volunteer Rollout</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:0%;background:var(--text-dim)"></div></div>
+      <div class="progress-label"><span>Jul–Aug 2026</span><span>Not started</span></div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="icon">◈</span> Program Insights</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>CEO Cohort Results</h3>
+      <p>CEO progression conversations "fundamentally shifted" — multiple CEOs identified new patterns. Quarterly adoption confirmed across MAD. Deeper authenticity than previous inquiry methods.</p>
+      <a href="https://notes.granola.ai/d/78a4963e-f42e-4560-ae07-23bfacac318e" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>User Experience Feedback</h3>
+      <p>Users felt like "talking to an actual MAD person" rather than an automated system. The streaming conversation approach creates significantly more depth than the previous survey model.</p>
+      <a href="https://notes.granola.ai/d/89bab7f3-3454-4397-8eec-dbd9aacd8d08" target="_blank">Source: Granola →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── MARKETING ── -->
+<div class="panel" id="panel-marketing">
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Strategy</div>
+      <div class="kpi-value" style="font-size:20px">Documentary</div>
+      <div class="kpi-sub">Zeitgeist marketing approach</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Core Narrative</div>
+      <div class="kpi-value" style="font-size:16px;line-height:1.4">"Can AI deepen relationships?"</div>
+      <div class="kpi-sub">During increasing isolation</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Brand Frame</div>
+      <div class="kpi-value" style="font-size:18px">From the makers of MAD</div>
+      <div class="kpi-sub">20-year nonprofit trust</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Entry Channel</div>
+      <div class="kpi-value" style="font-size:20px">HR Networks</div>
+      <div class="kpi-sub">Existing corporate connections</div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="icon">◈</span> Go-to-Market Channels</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Documentary Marketing</h3>
+      <p>Capturing the corporate sales process itself for documentary-style content. The narrative "Can AI deepen relationships during increasing isolation?" positions CWC at the intersection of tech and human connection.</p>
+      <a href="https://notes.granola.ai/d/78a4963e-f42e-4560-ae07-23bfacac318e" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>CollabX Partnership</h3>
+      <p>Growth survey positioned as customer acquisition cycle. Using the inquiry itself as the top-of-funnel — users experience the value before they pay.</p>
+      <a href="https://notes.granola.ai/d/b565096e-1a40-41e4-9f2b-aab71911a077" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>MAD Community Pipeline</h3>
+      <p>100 organizers → 20,000 alumni → volunteers. The largest organic channel. Consumer-first adoption strategy rather than enterprise sales.</p>
+      <a href="https://notes.granola.ai/d/cb228f43-31e2-460e-9f31-e01c7e320d86" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>Corporate Entry via HR</h3>
+      <p>Leveraging existing HR connections for corporate market entry. Teams adopt CWC for growth and feedback loops.</p>
+      <a href="https://notes.granola.ai/d/b565096e-1a40-41e4-9f2b-aab71911a077" target="_blank">Source: Granola →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── SALES ── -->
+<div class="panel" id="panel-sales">
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Monthly Target</div>
+      <div class="kpi-value" style="color:var(--green)">₹30L</div>
+      <div class="kpi-sub">By November 2026</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Annual Target</div>
+      <div class="kpi-value">$1M</div>
+      <div class="kpi-sub">30,000 users (Sanjay's minimum)</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Stretch Goal</div>
+      <div class="kpi-value" style="color:var(--accent-light)">$3M</div>
+      <div class="kpi-sub">100,000 users ("quality of life")</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">B2B Team Price</div>
+      <div class="kpi-value">$10<span style="font-size:16px;color:var(--text-muted)">/team</span></div>
+      <div class="kpi-sub">~200 teams short-term goal</div>
+    </div>
+  </div>
+
+  <!-- Revenue milestones table -->
+  <div class="section-title"><span class="icon">◈</span> Revenue Milestones</div>
+  <div class="card" style="margin-bottom:28px;overflow-x:auto">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Milestone</th>
+          <th>Users Needed</th>
+          <th>Revenue</th>
+          <th>Timeline</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--text)">Break-even</td>
+          <td>200 teams</td>
+          <td>$2,000/mo</td>
+          <td>Q2 2026</td>
+          <td><span class="pill pill-amber" style="font-size:11px">In Progress</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--text)">Monthly profit target</td>
+          <td>12,000 individuals</td>
+          <td>₹30L/mo</td>
+          <td>Nov 2026</td>
+          <td><span class="pill pill-blue" style="font-size:11px">Planned</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--text)">Minimum viable business</td>
+          <td>30,000</td>
+          <td>$1M ARR</td>
+          <td>2027</td>
+          <td><span class="pill pill-blue" style="font-size:11px">Planned</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--text)">Quality of life milestone</td>
+          <td>100,000</td>
+          <td>$3M ARR</td>
+          <td>2028</td>
+          <td><span class="pill pill-blue" style="font-size:11px">Planned</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--text)">Long-term recurring</td>
+          <td>40,000 subscribers</td>
+          <td>₹1.6Cr/yr</td>
+          <td>—</td>
+          <td><span class="pill pill-blue" style="font-size:11px">Vision</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title"><span class="icon">◈</span> Customer Segments</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>B2B Teams</h3>
+      <p>Corporate teams using CWC for growth and feedback. Entry via existing HR connections. $10/team pricing. CollabX partnership as acquisition channel.</p>
+      <a href="https://notes.granola.ai/d/b565096e-1a40-41e4-9f2b-aab71911a077" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>MAD Community (Individuals)</h3>
+      <p>20,000 MAD alumni at $4/month. Consumer-first adoption. Freemium model — free growth card, premium for ongoing features.</p>
+      <a href="https://notes.granola.ai/d/cb228f43-31e2-460e-9f31-e01c7e320d86" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>B2B2B — Consultants</h3>
+      <p>Subscription model for consultants who use CWC with their own clients. Multiplier effect on distribution.</p>
+      <a href="https://notes.granola.ai/d/b565096e-1a40-41e4-9f2b-aab71911a077" target="_blank">Source: Granola →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── COMMUNITY ── -->
+<div class="panel" id="panel-community">
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Philosophy</div>
+      <div class="kpi-value" style="font-size:18px">Care Infrastructure</div>
+      <div class="kpi-sub">Technology that enables caring communities</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Framework</div>
+      <div class="kpi-value" style="font-size:18px">Dunbar's Numbers</div>
+      <div class="kpi-sub">5 / 15 / 50 intentional relationships</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Core Design</div>
+      <div class="kpi-value" style="font-size:18px">Individual First</div>
+      <div class="kpi-sub">Not enterprise-first</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Impact Model</div>
+      <div class="kpi-value" style="font-size:18px">Movement Side</div>
+      <div class="kpi-sub">Prioritizing community over corporate</div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="icon">◈</span> Community Weaving Framework</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Five Elements</h3>
+      <ul>
+        <li><strong style="color:var(--red)">Fire</strong> — Purpose and passion</li>
+        <li><strong style="color:var(--accent-light)">Web</strong> — Connections and relationships</li>
+        <li><strong style="color:var(--amber)">Rhythm</strong> — Habits and practices</li>
+        <li><strong style="color:var(--blue)">Circle</strong> — Community and belonging</li>
+        <li><strong style="color:var(--green)">Spiral</strong> — Growth and evolution</li>
+      </ul>
+      <a href="https://notes.granola.ai/d/78a4963e-f42e-4560-ae07-23bfacac318e" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>Care Angels System</h3>
+      <p>Each user invites 5 people as trusted peers. Anonymized feedback is collected and woven into the growth card. This creates a network effect — every user activates 5 more potential users.</p>
+      <a href="https://notes.granola.ai/d/cb228f43-31e2-460e-9f31-e01c7e320d86" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>Circle Formation</h3>
+      <p>CWC facilitates the formation of ongoing conversation circles. Small groups connected through shared inquiry create the relational infrastructure for deeper community.</p>
+      <a href="https://notes.granola.ai/d/1a14fd70-4d3b-40a7-bdf4-cff836b22eb8" target="_blank">Source: Granola →</a>
+    </div>
+    <div class="card">
+      <h3>The Relational Thesis</h3>
+      <p>Poverty exists because of lack of care in society. CWC is the technology layer that rebuilds relational depth — the missing infrastructure. "From the makers of MAD" isn't just branding, it's the 20-year proof point.</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// Revenue chart (simple canvas)
+const canvas = document.getElementById('revenueChart');
+if (canvas) {
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  function drawChart() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const w = rect.width - 48;
+    const h = 220;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.scale(dpr, dpr);
+
+    // Data: months from Apr 2026 → Nov 2026
+    const months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
+    const target = [0.5, 2, 5, 8, 12, 18, 24, 30]; // lakhs
+    const actual = [0]; // only current month started
+
+    const padL = 44, padR = 16, padT = 16, padB = 32;
+    const chartW = w - padL - padR;
+    const chartH = h - padT - padB;
+    const maxVal = 32;
+
+    function x(i) { return padL + (i / (months.length - 1)) * chartW; }
+    function y(v) { return padT + chartH - (v / maxVal) * chartH; }
+
+    // Grid
+    ctx.strokeStyle = '#2a2e3a';
+    ctx.lineWidth = 1;
+    for (let v = 0; v <= 30; v += 10) {
+      ctx.beginPath();
+      ctx.moveTo(padL, y(v));
+      ctx.lineTo(w - padR, y(v));
+      ctx.stroke();
+      ctx.fillStyle = '#5a5e72';
+      ctx.font = '11px -apple-system, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('₹' + v + 'L', padL - 8, y(v) + 4);
+    }
+
+    // Month labels
+    ctx.fillStyle = '#5a5e72';
+    ctx.textAlign = 'center';
+    months.forEach((m, i) => {
+      ctx.fillText(m, x(i), h - 8);
+    });
+
+    // Target line
+    ctx.strokeStyle = '#6c5ce7';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    target.forEach((v, i) => {
+      if (i === 0) ctx.moveTo(x(i), y(v));
+      else ctx.lineTo(x(i), y(v));
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Target endpoint
+    ctx.fillStyle = '#6c5ce7';
+    ctx.beginPath();
+    ctx.arc(x(target.length - 1), y(target[target.length - 1]), 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Target label
+    ctx.fillStyle = '#a29bfe';
+    ctx.font = 'bold 12px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('₹30L', x(target.length - 1) + 10, y(target[target.length - 1]) + 4);
+
+    // Actual line (just starting point for now)
+    ctx.fillStyle = '#00b894';
+    ctx.beginPath();
+    ctx.arc(x(0), y(actual[0]), 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#00b894';
+    ctx.font = '11px -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Today', x(0) + 10, y(actual[0]) - 8);
+  }
+
+  drawChart();
+  window.addEventListener('resize', drawChart);
+}
+</script>
+
+</body>
+</html>
